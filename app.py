@@ -11,7 +11,6 @@ from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 
 app = Flask(__name__)
 
-
 # ==================================
 # LOAD DATA
 # ==================================
@@ -32,12 +31,13 @@ paper_x = pd.read_excel(paper_path)
 paper = paper_x.values.tolist()
 
 df_pre = pd.read_excel(pre_path)
+
 processed_paper = (
     df_pre["final_text"]
     .fillna("")
+    .astype(str)
     .tolist()
 )
-
 
 # ==================================
 # NLP SETUP
@@ -47,34 +47,35 @@ stopword = StopWordRemoverFactory().create_stop_word_remover()
 stemmer = StemmerFactory().create_stemmer()
 
 vectorizer = TfidfVectorizer(
-    ngram_range=(1,2),
-    stop_words=None
+    ngram_range=(1, 2),
+    lowercase=True
 )
-tfidf_matrix = vectorizer.fit_transform(processed_paper)
 
+tfidf_matrix = vectorizer.fit_transform(
+    processed_paper
+)
 
 # ==================================
 # HIGHLIGHT
 # ==================================
 
-def highlight(teks, keyword):
+def highlight(text, keyword):
 
-    for k in keyword.split():
+    for word in keyword.split():
 
-        pattern = rf"\b({re.escape(k)})\b"
+        pattern = rf"\b({re.escape(word)})\b"
 
-        teks = re.sub(
+        text = re.sub(
             pattern,
             r"<mark>\1</mark>",
-            teks,
+            text,
             flags=re.IGNORECASE
         )
 
-    return teks
-
+    return text
 
 # ==================================
-# HOME
+# SEARCH
 # ==================================
 
 @app.route("/", methods=["GET", "POST"])
@@ -85,24 +86,35 @@ def home():
 
     if request.method == "POST":
 
-        query_asli = request.form["query"]
+        query_asli = request.form.get(
+            "query",
+            ""
+        ).strip()
 
         query = query_asli.lower()
+
         query = query.translate(
-            str.maketrans('', '', string.punctuation)
+            str.maketrans(
+                '',
+                '',
+                string.punctuation
+            )
         )
 
         query = stopword.remove(query)
+
         tokens = query.split()
 
         if len(tokens) > 0:
 
             tokens_stem = [
-                stemmer.stem(x)
-                for x in tokens
+                stemmer.stem(t)
+                for t in tokens
             ]
 
-            query_joined = " ".join(tokens_stem)
+            query_joined = " ".join(
+                tokens_stem
+            )
 
             query_vec = vectorizer.transform(
                 [query_joined]
@@ -113,84 +125,116 @@ def home():
                 query_vec
             ).flatten()
 
-            ranked_idx = np.argsort(-similarity)
+            ranked_idx = np.argsort(
+                -similarity
+            )
 
             for idx in ranked_idx:
 
-    # Filter similarity minimum
-    if similarity[idx] < 0.20:
-        continue
+                score = float(
+                    similarity[idx]
+                )
 
-    judul = str(paper[idx][0])
-    tanggal = str(paper[idx][1])
-    isi = str(paper[idx][2])
-    link = str(paper[idx][3])
+                # buang similarity kecil
+                if score < 0.08:
+                    continue
 
-    teks_gabungan = (
-        judul.lower() + " " +
-        isi.lower()
-    )
+                judul = str(
+                    paper[idx][0]
+                )
 
-    # Hitung jumlah keyword yang cocok
-    matched = 0
+                tanggal = str(
+                    paper[idx][1]
+                )
 
-    for token in tokens:
+                isi = str(
+                    paper[idx][2]
+                )
 
-        if re.search(
-            rf"\b{re.escape(token)}\b",
-            teks_gabungan,
-            re.IGNORECASE
-        ):
-            matched += 1
+                link = str(
+                    paper[idx][3]
+                )
 
-    # Minimal separuh keyword harus cocok
-    minimal_match = max(
-        1,
-        len(tokens) // 2
-    )
+                teks_gabungan = (
+                    judul.lower()
+                    + " "
+                    + isi.lower()
+                )
 
-    if matched < minimal_match:
-        continue
+                matched = 0
 
-    # Cari posisi keyword pertama
-    match = re.search(
-        rf"\b{re.escape(tokens[0])}\b",
-        isi,
-        re.IGNORECASE
-    )
+                for token in tokens:
 
-    if match:
-        pos = match.start()
-        start = max(0, pos - 60)
-        snippet = isi[start:start + 220]
-    else:
-        snippet = isi[:220]
+                    if re.search(
+                        rf"\b{re.escape(token)}\b",
+                        teks_gabungan,
+                        re.IGNORECASE
+                    ):
+                        matched += 1
 
-    snippet += "..."
+                # WAJIB cocok mayoritas keyword
+                minimal_match = max(
+                    1,
+                    int(
+                        np.ceil(
+                            len(tokens) * 0.6
+                        )
+                    )
+                )
 
-    snippet = highlight(
-        snippet,
-        query_asli
-    )
+                if matched < minimal_match:
+                    continue
 
-    judul = highlight(
-        judul,
-        query_asli
-    )
+                # snippet
+                match = re.search(
+                    rf"\b{re.escape(tokens[0])}\b",
+                    isi,
+                    re.IGNORECASE
+                )
 
-    results.append({
-        "judul": judul,
-        "tanggal": tanggal,
-        "snippet": snippet,
-        "link": link,
-        "score": round(
-            float(similarity[idx]),
-            4
-        )
-    })
+                if match:
 
-    if len(results) == 50:
-        break
+                    pos = match.start()
+
+                    start = max(
+                        0,
+                        pos - 60
+                    )
+
+                    snippet = isi[
+                        start:
+                        start + 220
+                    ]
+
+                else:
+
+                    snippet = isi[:220]
+
+                snippet += "..."
+
+                judul = highlight(
+                    judul,
+                    query_asli
+                )
+
+                snippet = highlight(
+                    snippet,
+                    query_asli
+                )
+
+                results.append({
+                    "judul": judul,
+                    "tanggal": tanggal,
+                    "snippet": snippet,
+                    "link": link,
+                    "score": round(
+                        score,
+                        4
+                    )
+                })
+
+                if len(results) >= 50:
+                    break
 
     return render_template(
         "index.html",
@@ -198,6 +242,11 @@ def home():
         query=query_asli
     )
 
+# ==================================
+# VERCEL
+# ==================================
+
+application = app
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
