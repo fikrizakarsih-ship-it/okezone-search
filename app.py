@@ -46,7 +46,10 @@ processed_paper = (
 stopword = StopWordRemoverFactory().create_stop_word_remover()
 stemmer = StemmerFactory().create_stemmer()
 
-vectorizer = TfidfVectorizer()
+vectorizer = TfidfVectorizer(
+    ngram_range=(1,2),
+    stop_words=None
+)
 tfidf_matrix = vectorizer.fit_transform(processed_paper)
 
 
@@ -114,39 +117,55 @@ def home():
 
             for idx in ranked_idx:
 
-                if similarity[idx] < 0.05:
-                    continue
+    # Filter similarity
+    if similarity[idx] < 0.10:
+        continue
 
-                judul = str(paper[idx][0])
-                tanggal = str(paper[idx][1])
-                isi = str(paper[idx][2])
-                link = str(paper[idx][3])
+    judul = str(paper[idx][0])
+    tanggal = str(paper[idx][1])
+    isi = str(paper[idx][2])
+    link = str(paper[idx][3])
 
-                teks_gabungan = (
-                    judul.lower() + " " +
-                    isi.lower()
-                )
-                
-                if not any(
-                    re.search(
-                        rf"\b{re.escape(token)}\b",
-                        teks_gabungan,
-                        re.IGNORECASE
-                    )
-                    for token in tokens
-                ):
-                    continue
-                
-                match = re.search(
-    rf"\b{re.escape(tokens[0])}\b",
-    isi,
-    re.IGNORECASE
-)
+    teks_gabungan = (
+        judul.lower() + " " +
+        isi.lower()
+    )
 
-if match:
-    pos = match.start()
-else:
-    pos = -1
+    # Hitung jumlah keyword yang cocok
+    matched = 0
+
+    for token in tokens:
+
+        if re.search(
+            rf"\b{re.escape(token)}\b",
+            teks_gabungan,
+            re.IGNORECASE
+        ):
+            matched += 1
+
+    # Jika query 3 kata atau lebih,
+    # minimal 2 kata harus ditemukan
+    if len(tokens) >= 3:
+
+        if matched < 2:
+            continue
+
+    else:
+
+        if matched < 1:
+            continue
+
+    # Cari posisi keyword pertama
+    match = re.search(
+        rf"\b{re.escape(tokens[0])}\b",
+        isi,
+        re.IGNORECASE
+    )
+
+    if match:
+        pos = match.start()
+    else:
+        pos = -1
 
                 if pos != -1:
                     start = max(0, pos - 60)
@@ -166,6 +185,9 @@ else:
                     query_asli
                 )
 
+                    if matched == 0:
+                continue
+        
                 results.append({
                     "judul": judul,
                     "tanggal": tanggal,
