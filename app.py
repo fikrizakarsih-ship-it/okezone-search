@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request
 import pandas as pd
 import re
+import os
 import string
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -15,11 +16,27 @@ app = Flask(__name__)
 # LOAD DATA
 # ==================================
 
-paper_x = pd.read_excel("hasil_scraping_okezone.xlsx")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+paper_path = os.path.join(
+    BASE_DIR,
+    "hasil_scraping_okezone.xlsx"
+)
+
+pre_path = os.path.join(
+    BASE_DIR,
+    "hasil_preprocessing.xlsx"
+)
+
+paper_x = pd.read_excel(paper_path)
 paper = paper_x.values.tolist()
 
-df_pre = pd.read_excel("hasil_preprocessing.xlsx")
-processed_paper = df_pre["final_text"].fillna("").tolist()
+df_pre = pd.read_excel(pre_path)
+processed_paper = (
+    df_pre["final_text"]
+    .fillna("")
+    .tolist()
+)
 
 
 # ==================================
