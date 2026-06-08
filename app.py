@@ -136,9 +136,15 @@ def home():
                 )
 
                 # buang similarity kecil
-                if score < 0.01:
-                    continue
+                if len(tokens) == 1:
 
+                if score < 0.02:
+                    continue
+            
+            else:
+            
+                if score < 0.08:
+                    continue
                 judul = str(
                     paper[idx][0]
                 )
