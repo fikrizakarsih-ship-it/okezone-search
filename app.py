@@ -117,8 +117,8 @@ def home():
 
             for idx in ranked_idx:
 
-    # Filter similarity
-    if similarity[idx] < 0.10:
+    # Filter similarity minimum
+    if similarity[idx] < 0.20:
         continue
 
     judul = str(paper[idx][0])
@@ -143,17 +143,14 @@ def home():
         ):
             matched += 1
 
-    # Jika query 3 kata atau lebih,
-    # minimal 2 kata harus ditemukan
-    if len(tokens) >= 3:
+    # Minimal separuh keyword harus cocok
+    minimal_match = max(
+        1,
+        len(tokens) // 2
+    )
 
-        if matched < 2:
-            continue
-
-    else:
-
-        if matched < 1:
-            continue
+    if matched < minimal_match:
+        continue
 
     # Cari posisi keyword pertama
     match = re.search(
@@ -164,42 +161,36 @@ def home():
 
     if match:
         pos = match.start()
+        start = max(0, pos - 60)
+        snippet = isi[start:start + 220]
     else:
-        pos = -1
+        snippet = isi[:220]
 
-                if pos != -1:
-                    start = max(0, pos - 60)
-                    snippet = isi[start:start+220]
-                else:
-                    snippet = isi[:220]
+    snippet += "..."
 
-                snippet += "..."
+    snippet = highlight(
+        snippet,
+        query_asli
+    )
 
-                snippet = highlight(
-                    snippet,
-                    query_asli
-                )
+    judul = highlight(
+        judul,
+        query_asli
+    )
 
-                judul = highlight(
-                    judul,
-                    query_asli
-                )
+    results.append({
+        "judul": judul,
+        "tanggal": tanggal,
+        "snippet": snippet,
+        "link": link,
+        "score": round(
+            float(similarity[idx]),
+            4
+        )
+    })
 
-                    if matched == 0:
-                continue
-        
-                results.append({
-                    "judul": judul,
-                    "tanggal": tanggal,
-                    "snippet": snippet,
-                    "link": link,
-                    "score": round(
-                        float(similarity[idx]), 4
-                    )
-                })
-
-                if len(results) == 50:
-                    break
+    if len(results) == 50:
+        break
 
     return render_template(
         "index.html",
