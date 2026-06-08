@@ -163,3 +163,35 @@ mark{
     padding:2px 4px;
     border-radius:4px;
 }
+/* ================================= */
+/* HASIL TIDAK DITEMUKAN */
+/* ================================= */
+
+.not-found{
+    margin-top:20px;
+    padding:25px;
+    border-radius:16px;
+    text-align:center;
+
+    background:rgba(239,68,68,0.08);
+    border:1px solid rgba(239,68,68,0.25);
+
+    backdrop-filter:blur(10px);
+}
+
+.not-found h3{
+    color:#fca5a5;
+    margin-bottom:10px;
+    font-size:20px;
+}
+
+.not-found p{
+    color:#cbd5e1;
+    line-height:1.7;
+}
+
+.suggestion{
+    margin-top:12px;
+    color:#94a3b8;
+    font-size:14px;
+}
