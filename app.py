@@ -114,7 +114,7 @@ def home():
 
             for idx in ranked_idx:
 
-                if similarity[idx] < 0.10:
+                if similarity[idx] < 0.05:
                     continue
 
                 judul = str(paper[idx][0])
@@ -122,6 +122,21 @@ def home():
                 isi = str(paper[idx][2])
                 link = str(paper[idx][3])
 
+                teks_gabungan = (
+                    judul.lower() + " " +
+                    isi.lower()
+                )
+                
+                if not any(
+                    re.search(
+                        rf"\b{re.escape(token)}\b",
+                        teks_gabungan,
+                        re.IGNORECASE
+                    )
+                    for token in tokens
+                ):
+                    continue
+                
                 match = re.search(
     rf"\b{re.escape(tokens[0])}\b",
     isi,
