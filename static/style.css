@@ -92,17 +92,6 @@ body{
     font-size:13px;
 }
 
-.ranking{
-    display:inline-block;
-    background:#2563eb;
-    color:white;
-    font-size:12px;
-    font-weight:600;
-    padding:4px 10px;
-    border-radius:8px;
-    margin-bottom:10px;
-}
-
 /* info */
 .hasil-info{
     color:#94a3b8;
