@@ -55,13 +55,18 @@ tfidf_matrix = vectorizer.fit_transform(processed_paper)
 # ==================================
 
 def highlight(teks, keyword):
+
     for k in keyword.split():
+
+        pattern = rf"\b({re.escape(k)})\b"
+
         teks = re.sub(
-            rf"({re.escape(k)})",
+            pattern,
             r"<mark>\1</mark>",
             teks,
             flags=re.IGNORECASE
         )
+
     return teks
 
 
@@ -117,7 +122,16 @@ def home():
                 isi = str(paper[idx][2])
                 link = str(paper[idx][3])
 
-                pos = isi.lower().find(tokens[0])
+                match = re.search(
+    rf"\b{re.escape(tokens[0])}\b",
+    isi,
+    re.IGNORECASE
+)
+
+if match:
+    pos = match.start()
+else:
+    pos = -1
 
                 if pos != -1:
                     start = max(0, pos - 60)
