@@ -84,11 +84,23 @@ body{
 .search-box button:hover{
     background:#1d4ed8;
 }
+
 .stats{
     text-align:center;
     color:#94a3b8;
     margin-bottom:15px;
     font-size:13px;
+}
+
+.ranking{
+    display:inline-block;
+    background:#2563eb;
+    color:white;
+    font-size:12px;
+    font-weight:600;
+    padding:4px 10px;
+    border-radius:8px;
+    margin-bottom:10px;
 }
 
 /* info */
