@@ -136,7 +136,7 @@ def home():
                 )
 
                 # buang similarity kecil
-                if score < 0.08:
+                if score < 0.01:
                     continue
 
                 judul = str(
