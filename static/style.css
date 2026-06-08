@@ -84,6 +84,12 @@ body{
 .search-box button:hover{
     background:#1d4ed8;
 }
+.stats{
+    text-align:center;
+    color:#94a3b8;
+    margin-bottom:15px;
+    font-size:13px;
+}
 
 /* info */
 .hasil-info{
