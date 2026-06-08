@@ -28,34 +28,51 @@
     </form>
 
     {% if results %}
-    <div class="hasil-info">
-        🔥 Ditemukan {{ results|length }} hasil
-    </div>
 
-    <div class="results">
-        {% for item in results %}
-        <div class="card">
+<div class="hasil-info">
+    🔥 Ditemukan {{ results|length }} hasil
+</div>
 
-            <div class="meta-top">
-                🌐 {{ item.link }}
-            </div>
+<div class="results">
+    {% for item in results %}
+    <div class="card">
 
-            <a href="{{ item.link }}" target="_blank" class="judul">
-                {{ item.judul|safe }}
-            </a>
-
-            <div class="meta">
-                📅 {{ item.tanggal }} • 🎯 Similarity: {{ item.score }}
-            </div>
-
-            <div class="snippet">
-                {{ item.snippet|safe }}
-            </div>
-
+        <div class="meta-top">
+            🌐 {{ item.link }}
         </div>
-        {% endfor %}
+
+        <a href="{{ item.link }}" target="_blank" class="judul">
+            {{ item.judul|safe }}
+        </a>
+
+        <div class="meta">
+            📅 {{ item.tanggal }} • 🎯 Similarity: {{ item.score }}
+        </div>
+
+        <div class="snippet">
+            {{ item.snippet|safe }}
+        </div>
+
     </div>
-    {% endif %}
+    {% endfor %}
+</div>
+
+{% elif query %}
+
+<div class="not-found">
+    <h3>😔 Hasil tidak ditemukan</h3>
+    <p>
+        Tidak ada berita yang cocok dengan kata kunci
+        <b>"{{ query }}"</b>
+    </p>
+
+    <p class="suggestion">
+        Coba gunakan kata kunci lain seperti:
+        Samsung, Xiaomi, AI, Google, Teknologi
+    </p>
+</div>
+
+{% endif %}
 
     <div class="footer">
         © 2026 Okezone Search Engine
