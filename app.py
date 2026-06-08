@@ -114,7 +114,7 @@ def home():
 
             for idx in ranked_idx:
 
-                if similarity[idx] <= 0:
+                if similarity[idx] < 0.10:
                     continue
 
                 judul = str(paper[idx][0])
