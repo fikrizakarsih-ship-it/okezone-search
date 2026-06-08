@@ -1,1 +1,67 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Okezone Search</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="bg"></div>
+
+<div class="container">
+
+    <div class="header">
+        <h1 class="logo">🔎 Okezone <span>Search</span></h1>
+        <p class="subtitle">Mesin pencarian berita teknologi berbasis TF-IDF & Cosine Similarity</p>
+    </div>
+
+    <form method="POST" class="search-box">
+        <input type="text" name="query" placeholder="Cari berita teknologi..." value="{{ query }}" required>
+        <button type="submit">Cari</button>
+    </form>
+
+    {% if results %}
+    <div class="hasil-info">
+        🔥 Ditemukan {{ results|length }} hasil
+    </div>
+
+    <div class="results">
+        {% for item in results %}
+        <div class="card">
+
+            <div class="meta-top">
+                🌐 {{ item.link }}
+            </div>
+
+            <a href="{{ item.link }}" target="_blank" class="judul">
+                {{ item.judul|safe }}
+            </a>
+
+            <div class="meta">
+                📅 {{ item.tanggal }} • 🎯 Similarity: {{ item.score }}
+            </div>
+
+            <div class="snippet">
+                {{ item.snippet|safe }}
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="footer">
+        © 2026 Okezone Search Engine
+    </div>
+
+</div>
+
+</body>
+</html>
